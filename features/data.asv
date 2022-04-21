@@ -1,0 +1,149 @@
+%Criando a matrix de entrada da rede neural
+
+
+clc;
+clear all;
+close all;
+
+% Import the data
+[~, ~, raw] = xlsread('tempo das musicas.xls','Planilha1','A2:D83');
+raw(cellfun(@(x) ~isempty(x) && isnumeric(x) && isnan(x),raw)) = {''};
+cellVectors = raw(:,[1,4]);
+raw = raw(:,[2,3]);
+
+% Create output variable
+data = reshape([raw{:}],size(raw));
+
+% Allocate imported array to column variable names
+NomeMusicas = cellVectors(:,1);
+Tempo = data(:,1);
+Classe = data(:,2);
+Tipo = cellVectors(:,2);
+
+% Clear temporary variables
+clearvars data raw cellVectors;
+
+
+%%%%%% LENDO TODAS AS MÚSICAS %%%%%%%%
+Tjanela = 2.9721541950113; %tempo de cada janela em s 2.9721541950113
+Tsobrep = 1; %tempo de sobreposição
+
+musicas = []; %matriz que reberá as músicas
+musicasfilt = []; %matriz que reberá as músicas filtradas
+musica =[]; %matriz temporária que receberá cada música
+amostras = [];
+Fmaxs = [];
+%
+lr=131070;
+[ruido, fsr] = audioread('ruidofesta1.wav'); 
+ruido1 = (ruido(:,1) + ruido(:,2))/2;
+
+for i=1:length(Tempo)
+  
+i
+   filename = char(NomeMusicas(i));
+   [audio, fs] = audioread(filename); 
+   l = size (audio);
+   if (size(2)==1)
+        som = audio(:,1);
+   else
+       som = (audio(:,1) + audio(:,2))/2;
+   end
+   
+%    filename = [filename(1:length(filename)-3) 'txt']; 
+   [trecho musica Fmax] = segmenta(som,ruido1,fs, Tjanela, Tsobrep,Tempo(i),i);
+   musicas = [musicas;musica];
+%    amostras = [amostras; amostra];
+   Fmaxs = [Fmaxs Fmax];
+%    dfilt.delay(10)
+
+  L =size(trecho);
+  l = round(L(1)/2);
+  trecho = trecho(1:l,:);
+%   save (filename, 'trecho', '-ascii')
+end
+
+
+plot(Fmaxs)
+
+xlabel('música');
+ylabel('Frequencias fundamentais(Hz)');
+grid on 
+
+
+saida = musicas(:,1);
+entradas = musicas(:,2:end);
+
+save saida_.mat saida
+save entradas_Rfesta.mat entradas
+
+
+save('entradas.txt','entradas','-ascii')
+entradas = entradas';
+save('entradas.csv','entradas','-ascii') 
+csvwrite(entradas,'entradas.csv') 
+
+%% Spectrograma
+
+clc;
+clear all;
+close all;
+
+[x fs] = audioread('Bicho de Pé - Nosso xote.mp3');
+
+x = x(555000:800000,1);
+
+%spectrogram(x,200,1,200)
+%spectrogram(x,'yaxis')
+
+[S,F,T] = spectrogram(x,300,20,300,fs);
+
+surf(T,F,10*log10(abs(S)),'EdgeColor','none')
+axis xy; axis tight; view(0,90); 
+figure
+
+plot (x)
+%Parte 2
+[b3,a3] = butter(3,[100 200]*2/fs,'bandpass');
+x1 = filtfilt(b3,a3,x);
+
+[b3,a3] = butter(2,[5000 5500]*2/fs,'bandpass');
+x2 = filtfilt(b3,a3,x);
+
+
+x = x1; 
+ [b3,a3] = butter(1,[50 300]*2/fs,'stop');
+ x = filtfilt(b3,a3,x);
+
+
+% figure()
+% [S,F,T,p] = spectrogram(x,300,20,300,fs);
+
+[S,F,T,p] = spectrogram(x,300,20,300,fs);
+[q,nd] = max(20*log10(p));
+
+figure
+
+hold on
+plot3(T,F(nd),q,'r','linewidth',1)
+hold off
+colorbar
+view(2)
+
+figure
+surf(T,F,10*log10(abs(S)),'EdgeColor','none')
+axis xy; axis tight; view(0,90); 
+
+sound(x,fs)
+figure
+
+plot(x)
+c = 10*log10(abs(S));
+
+%
+
+
+%%
+hold on
+x = 0:1:100000000;
+plot(x,0.01*sin(0.0005*x))
