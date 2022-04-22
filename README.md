@@ -9,7 +9,8 @@ Todos os códigos usados para extração de características, construção dos c
 
 Como citar:
 
-@ARTICLE{ferreira-paiva2022,  
+```{bibtex}
+@article{ferreira-paiva2022,  
 author={Ferreira-Paiva, Lucas and Gonçalves Lopes, Hugo and Alfaro-Espinoza, Elizabeth Regina and Bonato Félix, Leonardo and Vilela Alves Neves, Rodolpho},
 journal={IEEE Latin America Transactions},   
 title={Towards a device for helping deaf people to dance: estimation of forro bar length using artificial neural network},   
@@ -18,5 +19,5 @@ volume={20},
 number={6},  
 pages={970-976},  
 doi={10.1109/TLA.2022.9757740}}
-
+```
 
